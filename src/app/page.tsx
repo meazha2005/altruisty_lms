@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import GallerySection from '@/components/GallerySection';
 import {
   Code,
   Cpu,
@@ -1337,6 +1338,11 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* ========================================================
+            LIFE AT ALTRUISTY - EVENT, TRAINING & CERTIFICATION GALLERY
+        ======================================================== */}
+        <GallerySection />
 
         {/* ========================================================
             STUDENT REVIEWS & TESTIMONIALS

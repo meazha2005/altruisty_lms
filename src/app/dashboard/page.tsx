@@ -80,33 +80,59 @@ export default function StudentDashboardPage() {
   }, [activeTab, data]);
 
   const handleDownloadCertPDF = async () => {
-    const certElement = document.getElementById('completion-certificate-preview');
-    if (!certElement || !data?.certificate) return;
+    if (!data?.certificate) return;
 
     try {
       setDownloading('pdf');
-      const { toPng } = await import('html-to-image');
-      const { jsPDF } = await import('jspdf');
 
-      const dataUrl = await toPng(certElement, {
-        quality: 1,
-        pixelRatio: 2.5,
-        backgroundColor: '#ffffff',
-      });
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [794, 1123],
-        compress: true,
-      });
-
-      pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
-      const sanitizedName = (data?.student?.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
-      pdf.save(`Altruisty_Certificate_${sanitizedName}_${data.certificate.certificate_id}.pdf`);
+      // Attempt high-res server PDF download first
+      const res = await fetch('/api/student/certificate-pdf');
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const sanitizedName = (data?.student?.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Altruisty_Certificate_${sanitizedName}_${data.certificate.certificate_id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        return;
+      }
+      throw new Error('Server download unavailable, falling back');
     } catch (err: any) {
-      console.error('Failed to download certificate as PDF', err);
-      window.print();
+      console.warn('Falling back to client-side PDF capture:', err);
+      const certElement = document.getElementById('completion-certificate-preview');
+      if (!certElement) {
+        window.print();
+        return;
+      }
+
+      try {
+        const { toPng } = await import('html-to-image');
+        const { jsPDF } = await import('jspdf');
+
+        const dataUrl = await toPng(certElement, {
+          quality: 1,
+          pixelRatio: 2.5,
+          backgroundColor: '#ffffff',
+        });
+
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [794, 1123],
+          compress: true,
+        });
+
+        pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
+        const sanitizedName = (data?.student?.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+        pdf.save(`Altruisty_Certificate_${sanitizedName}_${data.certificate.certificate_id}.pdf`);
+      } catch (clientErr) {
+        console.error('Failed client-side PDF capture:', clientErr);
+        window.print();
+      }
     } finally {
       setDownloading(null);
     }
@@ -142,33 +168,59 @@ export default function StudentDashboardPage() {
   };
 
   const handleDownloadOfferPDF = async () => {
-    const offerElement = document.getElementById('offer-letter-preview');
-    if (!offerElement || !data?.student) return;
+    if (!data?.student) return;
 
     try {
       setDownloading('pdf');
-      const { toPng } = await import('html-to-image');
-      const { jsPDF } = await import('jspdf');
 
-      const dataUrl = await toPng(offerElement, {
-        quality: 1,
-        pixelRatio: 2.5,
-        backgroundColor: '#ffffff',
-      });
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [794, 1123],
-        compress: true,
-      });
-
-      pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
-      const sanitizedName = (data.student.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
-      pdf.save(`Altruisty_Offer_Letter_${sanitizedName}.pdf`);
+      // Attempt high-res server PDF download first
+      const res = await fetch('/api/student/offer-letter');
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const sanitizedName = (data.student.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Altruisty_Offer_Letter_${sanitizedName}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        return;
+      }
+      throw new Error('Server download unavailable, falling back');
     } catch (err: any) {
-      console.error('Failed to download offer letter as PDF', err);
-      window.print();
+      console.warn('Falling back to client-side PDF capture:', err);
+      const offerElement = document.getElementById('offer-letter-preview');
+      if (!offerElement) {
+        window.print();
+        return;
+      }
+
+      try {
+        const { toPng } = await import('html-to-image');
+        const { jsPDF } = await import('jspdf');
+
+        const dataUrl = await toPng(offerElement, {
+          quality: 1,
+          pixelRatio: 2.5,
+          backgroundColor: '#ffffff',
+        });
+
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [794, 1123],
+          compress: true,
+        });
+
+        pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
+        const sanitizedName = (data.student.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+        pdf.save(`Altruisty_Offer_Letter_${sanitizedName}.pdf`);
+      } catch (clientErr) {
+        console.error('Failed client-side PDF capture:', clientErr);
+        window.print();
+      }
     } finally {
       setDownloading(null);
     }

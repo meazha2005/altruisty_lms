@@ -26,6 +26,41 @@ export default function Navbar() {
           </Link>
 
 
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link
+              href="/#programs"
+              className="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
+            >
+              Programs
+            </Link>
+            <Link
+              href="/#pricing"
+              className="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link
+              href="/#gallery"
+              className="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors flex items-center gap-1.5"
+            >
+              <span>Gallery</span>
+              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700">New</span>
+            </Link>
+            <Link
+              href="/#referral"
+              className="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
+            >
+              Refer & Earn
+            </Link>
+            <Link
+              href="/verify-certificate"
+              className="text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
+            >
+              Verify Certificate
+            </Link>
+          </nav>
+
           {/* Action Buttons */}
           <div className="hidden md:flex items-center gap-4">
             <Link
@@ -80,6 +115,14 @@ export default function Navbar() {
             className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
           >
             Pricing & Durations
+          </Link>
+          <Link
+            href="/#gallery"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-medium text-blue-700 hover:bg-blue-50 flex items-center justify-between"
+          >
+            <span>Life at Altruisty (Gallery)</span>
+            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-700">New</span>
           </Link>
           <Link
             href="/#referral"
