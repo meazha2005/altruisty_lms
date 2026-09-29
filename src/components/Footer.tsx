@@ -10,8 +10,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="bg-white p-2.5 rounded-xl inline-block">
-              <div className="relative h-10 w-44">
+            <div className="bg-white px-3.5 py-2.5 rounded-xl inline-block shadow-sm">
+              <div className="relative h-10 w-48 sm:w-52">
                 <Image
                   src="/logo.png"
                   alt="Altruisty Innovation Logo"

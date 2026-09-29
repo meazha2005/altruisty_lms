@@ -56,9 +56,9 @@ export default function StaffLoginPage() {
 
       <main className="flex-1 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-xl space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 mx-auto flex items-center justify-center">
-              <Users className="w-7 h-7" />
+          <div className="text-center space-y-3">
+            <div className="relative h-10 w-48 mx-auto mb-1">
+              <Image src="/logo.png" alt="Altruisty Innovation" fill className="object-contain" priority />
             </div>
             <h1 className="text-2xl font-black text-slate-900">Staff & Mentor Portal</h1>
             <p className="text-xs text-slate-500">
