@@ -208,9 +208,9 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ========================================================
-            HERO SECTION: MODERN TECH LAUNCHPAD
+            HERO SECTION: MODERN TECH LAUNCHPAD (FULL-SCREEN FIT)
         ======================================================== */}
-        <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-32 bg-radial from-sky-50/80 via-white to-white">
+        <section className="relative overflow-hidden min-h-[calc(100vh-5rem)] min-h-[calc(100dvh-5rem)] flex flex-col justify-center py-6 sm:py-8 lg:py-0 bg-radial from-sky-50/80 via-white to-white">
           {/* Ambient Lighting Orbs */}
           <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-r from-blue-400/15 via-sky-300/20 to-cyan-300/15 blur-3xl pointer-events-none -z-10 rounded-full" />
           <div className="absolute -top-24 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-glow" />
@@ -219,21 +219,21 @@ export default function HomePage() {
           {/* Grid pattern overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(#0284c7_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.05] pointer-events-none" />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full my-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center">
               {/* Left Column: Copy & Actions */}
-              <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+              <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
                 {/* Announcement Badge */}
-                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-blue-50/80 border border-blue-200/80 text-blue-900 text-xs font-semibold shadow-xs backdrop-blur-md">
+                <div className="inline-flex items-center gap-2.5 px-3.5 py-1 rounded-full bg-blue-50/80 border border-blue-200/80 text-blue-900 text-xs font-semibold shadow-xs backdrop-blur-md">
                   <span className="flex h-2 w-2 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
                   </span>
-                  <span>ALTRUISTY INNOVATION PVT LTD • ADMISSIONS OPEN 2026</span>
+                  <span className="tracking-wide">ALTRUISTY INNOVATION PVT LTD • ADMISSIONS OPEN 2026</span>
                 </div>
 
                 {/* Main Heading */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]">
                   Launch Your Career With{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-500">
                     Real-World Industry Internships
@@ -241,26 +241,26 @@ export default function HomePage() {
                 </h1>
 
                 {/* Subheading */}
-                <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
                   Hands-on live coding, daily technical mentorship, guaranteed industry visit, and verifiable QR credentials.
-                  <span className="block mt-2 font-bold text-slate-900">
+                  <span className="block mt-1.5 font-bold text-slate-900">
                     Pay only 50% now at registration — pay the remaining 50% balance only upon completion!
                   </span>
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-1 sm:pt-2">
                   <Link
                     href="/register"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base text-white bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-600 hover:from-blue-800 hover:to-sky-700 shadow-lg shadow-blue-500/25 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-600 hover:from-blue-800 hover:to-sky-700 shadow-lg shadow-blue-500/25 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                   >
                     <span>Apply Now (Pay 50% Later)</span>
-                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1" />
                   </Link>
 
                   <a
                     href="#pricing"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-all duration-200 hover:border-slate-300"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-semibold text-sm sm:text-base text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-all duration-200 hover:border-slate-300"
                   >
                     <BadgePercent className="w-4 h-4 text-sky-600" />
                     <span>View Pricing & Plans</span>
@@ -268,7 +268,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Trust Badges */}
-                <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
+                <div className="pt-2 sm:pt-3 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-semibold text-slate-500">
                   <div className="flex items-center gap-1.5 text-slate-700">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>50% Pay Later Scheme</span>
@@ -288,31 +288,31 @@ export default function HomePage() {
               <div className="lg:col-span-5">
                 <div className="relative mx-auto max-w-md lg:max-w-none">
                   {/* Floating Metric 1 */}
-                  <div className="absolute -top-6 -left-6 z-20 hidden sm:flex items-center gap-3 bg-white/90 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 animate-float-slow">
-                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                      <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
+                  <div className="absolute -top-4 -left-4 sm:-top-5 sm:-left-5 z-20 hidden sm:flex items-center gap-2.5 bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 animate-float-slow">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                      <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                     </div>
                     <div>
                       <div className="text-xs font-bold text-slate-900">4.9 / 5 Rating</div>
-                      <div className="text-[11px] text-slate-500">1,200+ Student Reviews</div>
+                      <div className="text-[10px] text-slate-500">1,200+ Student Reviews</div>
                     </div>
                   </div>
 
                   {/* Floating Metric 2 */}
-                  <div className="absolute -bottom-6 -right-4 z-20 hidden sm:flex items-center gap-3 bg-white/90 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 animate-float-reverse">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                      <Gift className="w-5 h-5" />
+                  <div className="absolute -bottom-4 -right-4 sm:-bottom-5 sm:-right-4 z-20 hidden sm:flex items-center gap-2.5 bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 animate-float-reverse">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                      <Gift className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="text-xs font-bold text-slate-900">₹25 Referral Reward</div>
-                      <div className="text-[11px] text-slate-500">Deducted from balance fee</div>
+                      <div className="text-[10px] text-slate-500">Deducted from balance fee</div>
                     </div>
                   </div>
 
                   {/* Main Glassmorphic Showcase Box */}
-                  <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-800 relative overflow-hidden">
+                  <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-800 relative overflow-hidden">
                     {/* Top window dots & status */}
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3.5 mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-rose-500" />
                         <div className="w-3 h-3 rounded-full bg-amber-500" />
@@ -325,7 +325,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Interactive Tab Selectors */}
-                    <div className="grid grid-cols-4 gap-1 p-1 bg-slate-800/80 rounded-xl mb-5 text-[11px] font-semibold">
+                    <div className="grid grid-cols-4 gap-1 p-1 bg-slate-800/80 rounded-xl mb-4 text-[11px] font-semibold">
                       <button
                         onClick={() => setHeroActiveTab('class')}
                         className={`py-1.5 rounded-lg transition-all ${
@@ -362,8 +362,8 @@ export default function HomePage() {
 
                     {/* Tab 1: Live Class Preview */}
                     {heroActiveTab === 'class' && (
-                      <div className="space-y-4 animate-in fade-in duration-200">
-                        <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2.5">
+                      <div className="space-y-3 animate-in fade-in duration-200">
+                        <div className="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
                           <div className="flex items-center justify-between text-xs text-sky-400 font-bold">
                             <span className="flex items-center gap-1.5">
                               <Video className="w-3.5 h-3.5" /> Upcoming Live Session
@@ -378,14 +378,14 @@ export default function HomePage() {
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-400/20">
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-500/10 border border-blue-400/20">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                            <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">
                               GM
                             </div>
                             <span className="text-xs text-slate-300 font-mono">meet.google.com/alt-live</span>
                           </div>
-                          <span className="text-xs font-bold text-sky-400">Emailed Automatically</span>
+                          <span className="text-[11px] font-bold text-sky-400">Emailed Automatically</span>
                         </div>
 
                         <p className="text-[11px] text-slate-400 text-center">
@@ -396,15 +396,15 @@ export default function HomePage() {
 
                     {/* Tab 2: Project Development Preview */}
                     {heroActiveTab === 'project' && (
-                      <div className="space-y-4 animate-in fade-in duration-200">
-                        <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-3">
+                      <div className="space-y-3 animate-in fade-in duration-200">
+                        <div className="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2.5">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                               <Terminal className="w-3.5 h-3.5" /> Milestone 3 Progress
                             </span>
                             <span className="text-xs font-bold text-white">85% Complete</span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-700 overflow-hidden">
+                          <div className="w-full h-1.5 rounded-full bg-slate-700 overflow-hidden">
                             <div className="w-[85%] h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full" />
                           </div>
                           <div className="text-xs text-slate-300 space-y-1">
@@ -435,9 +435,9 @@ export default function HomePage() {
 
                     {/* Tab 3: Verified Certificate Preview */}
                     {heroActiveTab === 'cert' && (
-                      <div className="space-y-3.5 animate-in fade-in duration-200">
-                        <div className="p-4 rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-md space-y-2 text-center">
-                          <div className="relative h-7 w-32 mx-auto">
+                      <div className="space-y-3 animate-in fade-in duration-200">
+                        <div className="p-3.5 rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-md space-y-1.5 text-center">
+                          <div className="relative h-6 w-28 mx-auto">
                             <Image src="/logo.png" alt="Altruisty" fill className="object-contain" priority />
                           </div>
                           <div className="text-[10px] font-black uppercase tracking-wider text-blue-800">
@@ -447,7 +447,7 @@ export default function HomePage() {
                           <div className="text-[11px] text-slate-500">
                             Full Stack Web Development • 30 Days Project Internship
                           </div>
-                          <div className="inline-block px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-200">
+                          <div className="inline-block px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-200">
                             ID: ALT-2026-X89K • VERIFIED & SIGNED
                           </div>
                         </div>
@@ -460,8 +460,8 @@ export default function HomePage() {
 
                     {/* Tab 4: Referral Reward Preview */}
                     {heroActiveTab === 'referral' && (
-                      <div className="space-y-3.5 animate-in fade-in duration-200">
-                        <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-900/60 to-blue-900/60 border border-indigo-400/30 space-y-2.5 text-center">
+                      <div className="space-y-3 animate-in fade-in duration-200">
+                        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-900/60 to-blue-900/60 border border-indigo-400/30 space-y-2 text-center">
                           <div className="text-xs font-bold text-amber-300 uppercase tracking-wider">
                             Your Unique Code: ALT-S924B
                           </div>
@@ -481,6 +481,20 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Bottom subtle scroll indicator */}
+          <div className="absolute bottom-2 lg:bottom-4 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center pointer-events-auto">
+            <a
+              href="#programs"
+              className="flex flex-col items-center gap-1 group text-slate-400 hover:text-blue-600 transition-colors"
+              aria-label="Scroll to explore programs"
+            >
+              <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400 group-hover:text-blue-600 transition-colors">
+                Explore Programs
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-blue-600 animate-bounce transition-colors" />
+            </a>
           </div>
         </section>
 
