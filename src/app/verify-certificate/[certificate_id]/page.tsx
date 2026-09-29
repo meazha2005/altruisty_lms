@@ -1,23 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import QRCode from 'qrcode';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CompletionCertificatePreview from '@/components/CompletionCertificatePreview';
 import {
   ShieldCheck,
-  Award,
-  Calendar,
-  CheckCircle2,
   AlertTriangle,
   Printer,
-  ExternalLink,
   Loader2,
-  Building2,
-  User,
-  GraduationCap,
   Download,
   FileDown,
 } from 'lucide-react';
@@ -36,9 +29,24 @@ export default function CertificateVerificationDetailPage({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  // Auto-scale certificate for viewport
+  useEffect(() => {
+    const updateScale = () => {
+      if (!containerRef.current) return;
+      const availableWidth = containerRef.current.clientWidth - 16;
+      setScale(Math.min(availableWidth / 794, 1));
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [certData]);
+
   const handleDownloadPDF = async () => {
-    const certElement = document.getElementById('certificate-print-area');
-    if (!certElement) return;
+    const certElement = document.getElementById('completion-certificate-preview');
+    if (!certElement || !certData) return;
 
     try {
       setDownloading('pdf');
@@ -47,45 +55,20 @@ export default function CertificateVerificationDetailPage({
 
       const dataUrl = await toPng(certElement, {
         quality: 1,
-        pixelRatio: 3,
-        cacheBust: true,
+        pixelRatio: 2.5,
         backgroundColor: '#ffffff',
       });
 
       const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
+        orientation: 'portrait',
+        unit: 'px',
+        format: [794, 1123],
+        compress: true,
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const img = new (window as any).Image();
-      img.src = dataUrl;
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-      });
-
-      const margin = 8;
-      const availWidth = pdfWidth - margin * 2;
-      const availHeight = pdfHeight - margin * 2;
-      const imgRatio = img.width / img.height;
-
-      let renderWidth = availWidth;
-      let renderHeight = availWidth / imgRatio;
-
-      if (renderHeight > availHeight) {
-        renderHeight = availHeight;
-        renderWidth = availHeight * imgRatio;
-      }
-
-      const xPos = (pdfWidth - renderWidth) / 2;
-      const yPos = (pdfHeight - renderHeight) / 2;
-
-      pdf.addImage(dataUrl, 'PNG', xPos, yPos, renderWidth, renderHeight);
-      pdf.save(`Altruisty-Certificate-${certData?.certificate_id || 'credential'}.pdf`);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
+      const sanitizedName = (certData.student_name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+      pdf.save(`Altruisty_Certificate_${sanitizedName}_${certData.certificate_id}.pdf`);
     } catch (err: any) {
       console.error('Failed to download certificate as PDF', err);
       window.print();
@@ -95,8 +78,8 @@ export default function CertificateVerificationDetailPage({
   };
 
   const handleDownloadPNG = async () => {
-    const certElement = document.getElementById('certificate-print-area');
-    if (!certElement) return;
+    const certElement = document.getElementById('completion-certificate-preview');
+    if (!certElement || !certData) return;
 
     try {
       setDownloading('png');
@@ -105,12 +88,12 @@ export default function CertificateVerificationDetailPage({
       const dataUrl = await toPng(certElement, {
         quality: 1,
         pixelRatio: 3,
-        cacheBust: true,
         backgroundColor: '#ffffff',
       });
 
+      const sanitizedName = (certData.student_name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
       const link = document.createElement('a');
-      link.download = `Altruisty-Certificate-${certData?.certificate_id || 'credential'}.png`;
+      link.download = `Altruisty_Certificate_${sanitizedName}_${certData.certificate_id}.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
@@ -138,9 +121,9 @@ export default function CertificateVerificationDetailPage({
 
         if (typeof window !== 'undefined') {
           const qrUrl = await QRCode.toDataURL(window.location.href, {
-            width: 130,
+            width: 250,
             margin: 1,
-            color: { dark: '#1b449c', light: '#ffffff' },
+            color: { dark: '#000000', light: '#ffffff' },
           });
           setQrCodeDataUrl(qrUrl);
         }
@@ -164,12 +147,30 @@ export default function CertificateVerificationDetailPage({
     );
   }
 
+  // Format dates for the certificate matching certificate_lms standard
+  const issueDateObj = certData ? new Date(certData.issue_date) : new Date();
+  const dd = String(issueDateObj.getDate()).padStart(2, '0');
+  const mm = String(issueDateObj.getMonth() + 1).padStart(2, '0');
+  const yy = String(issueDateObj.getFullYear()).slice(-2);
+  const yyyy = issueDateObj.getFullYear();
+  const formattedDate = `${dd}-${mm}-${yy}`;
+
+  const startDateObj = new Date(issueDateObj);
+  startDateObj.setDate(startDateObj.getDate() - 30);
+  const s_dd = String(startDateObj.getDate()).padStart(2, '0');
+  const s_mm = String(startDateObj.getMonth() + 1).padStart(2, '0');
+  const s_yyyy = startDateObj.getFullYear();
+  const formattedStartDate = `${s_dd}-${s_mm}-${s_yyyy}`;
+  const formattedEndDate = `${dd}-${mm}-${yyyy}`;
+
+  const extractedReg = certData?.certificate_id ? certData.certificate_id.split('-').pop() || '0001' : '0001';
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
 
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto space-y-6">
           {errorMsg || !certData ? (
             <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 text-center shadow-xl space-y-4 max-w-md mx-auto">
               <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 mx-auto flex items-center justify-center">
@@ -188,8 +189,8 @@ export default function CertificateVerificationDetailPage({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Authenticity Banner */}
-              <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-6 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Authenticity Banner & Actions */}
+              <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-5 sm:p-6 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0">
                     <ShieldCheck className="w-6 h-6" />
@@ -198,7 +199,7 @@ export default function CertificateVerificationDetailPage({
                     <span className="text-[11px] font-black uppercase tracking-wider text-emerald-200">
                       Official Verification Status
                     </span>
-                    <h2 className="text-xl font-bold">100% Authentic & Verified Credential</h2>
+                    <h2 className="text-lg sm:text-xl font-bold">100% Authentic & Verified Credential</h2>
                   </div>
                 </div>
 
@@ -238,7 +239,7 @@ export default function CertificateVerificationDetailPage({
                   <button
                     onClick={() => window.print()}
                     className="px-3 py-2.5 rounded-xl bg-emerald-800/60 hover:bg-emerald-800 text-emerald-100 text-xs font-bold flex items-center gap-1.5 border border-emerald-600/40 transition-all shrink-0 cursor-pointer"
-                    title="Print / Save PDF via Browser"
+                    title="Print via Browser"
                   >
                     <Printer className="w-4 h-4" />
                     <span className="hidden sm:inline">Print</span>
@@ -246,91 +247,35 @@ export default function CertificateVerificationDetailPage({
                 </div>
               </div>
 
-              {/* Printable Certificate Canvas */}
+              {/* Certificate Container with Proportional Scale */}
               <div
-                id="certificate-print-area"
-                className="bg-white rounded-3xl p-6 sm:p-12 border-8 border-slate-100 shadow-2xl relative overflow-hidden"
-                style={{
-                  backgroundImage: 'radial-gradient(#1b449c08 1px, transparent 1px)',
-                  backgroundSize: '20px 20px',
-                }}
+                ref={containerRef}
+                className="w-full flex justify-center items-start overflow-hidden py-2"
+                style={{ height: `${1123 * scale}px` }}
               >
-                {/* Decorative Borders */}
-                <div className="absolute top-4 left-4 w-12 h-12 border-t-4 border-l-4 border-blue-800 pointer-events-none" />
-                <div className="absolute top-4 right-4 w-12 h-12 border-t-4 border-r-4 border-blue-800 pointer-events-none" />
-                <div className="absolute bottom-4 left-4 w-12 h-12 border-b-4 border-l-4 border-blue-800 pointer-events-none" />
-                <div className="absolute bottom-4 right-4 w-12 h-12 border-b-4 border-r-4 border-blue-800 pointer-events-none" />
-
-                <div className="text-center space-y-4">
-                  <div className="flex justify-center">
-                    <img
-                      src="/logo.png"
-                      alt="Altruisty Innovation"
-                      className="h-14 sm:h-16 w-auto object-contain"
-                    />
-                  </div>
-
-                  <div>
-                    <span className="text-xs font-black tracking-widest uppercase text-blue-800 border-b-2 border-blue-600 pb-1">
-                      ALTRUISTY INNOVATION PVT LTD
-                    </span>
-                  </div>
-
-                  <h1 className="text-2xl sm:text-4xl font-serif font-black text-slate-900 tracking-tight pt-1">
-                    CERTIFICATE OF INTERNSHIP
-                  </h1>
-                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-slate-400">
-                    THIS CREDENTIAL IS PROUDLY PRESENTED TO
-                  </p>
-                </div>
-
-                <div className="text-center my-6">
-                  <div className="text-2xl sm:text-4xl font-serif font-bold text-blue-900 italic border-b-2 border-slate-300 pb-2 inline-block px-6 sm:px-8 min-w-[260px] sm:min-w-[320px]">
-                    {certData.student_name}
-                  </div>
-                </div>
-
-                <div className="text-center max-w-2xl mx-auto space-y-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
-                  <p>
-                    For successfully completing the{' '}
-                    <strong className="text-slate-900 font-bold capitalize">{certData.category} Internship</strong>{' '}
-                    program in{' '}
-                    <strong className="text-blue-800 font-bold">{certData.track_name}</strong> ({certData.duration})
-                    demonstrating high competence, commitment, and practical software engineering excellence.
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Graded with Distinction: <strong className="text-emerald-700 font-bold">{certData.grade}</strong> • Mode: <strong className="capitalize">{certData.mode}</strong>
-                  </p>
-                </div>
-
-                <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-between gap-4">
-                  {/* Left: QR Verification */}
-                  <div className="flex items-center gap-2.5 sm:gap-3">
-                    {qrCodeDataUrl && (
-                      <div className="p-1 sm:p-1.5 bg-white border border-slate-200 rounded-lg shadow-xs shrink-0">
-                        <img
-                          src={qrCodeDataUrl}
-                          alt="QR Code"
-                          className="w-14 h-14 sm:w-18 sm:h-18 object-contain"
-                        />
-                      </div>
-                    )}
-                    <div className="text-left text-[10px] sm:text-[11px] text-slate-500">
-                      <span className="font-bold text-slate-800 block text-xs">Scan to Verify</span>
-                      <span className="font-mono">ID: {certData.certificate_id}</span><br />
-                      <span className="text-emerald-600 font-semibold">✓ Verified Authenticity</span>
-                    </div>
-                  </div>
-
-                  {/* Right: Signature */}
-                  <div className="text-right">
-                    <div className="font-serif italic text-base sm:text-lg font-bold text-blue-950">
-                      Managing Director
-                    </div>
-                    <div className="w-28 sm:w-36 h-0.5 bg-slate-300 my-1 ml-auto" />
-                    <p className="text-[11px] sm:text-xs font-bold text-slate-800">Altruisty Innovation Pvt Ltd</p>
-                    <p className="text-[9px] sm:text-[10px] text-slate-500">Authorized Signatory</p>
-                  </div>
+                <div
+                  style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top center',
+                    width: '794px',
+                    height: '1123px',
+                    flexShrink: 0,
+                  }}
+                >
+                  <CompletionCertificatePreview
+                    fields={{
+                      candidateName: certData.student_name,
+                      domain: certData.track_name,
+                      startDate: formattedStartDate,
+                      endDate: formattedEndDate,
+                      duration: certData.duration,
+                      date: formattedDate,
+                      regno: extractedReg,
+                      certificateId: certData.certificate_id,
+                      qrCodeDataUrl: qrCodeDataUrl || undefined,
+                      verificationUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+                    }}
+                  />
                 </div>
               </div>
 

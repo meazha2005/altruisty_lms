@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
 import { sendCertificateEmail } from '@/lib/email';
+import { generateCompletionCertificatePdfBuffer } from '@/lib/pdfGenerator';
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,14 +61,48 @@ export async function POST(req: NextRequest) {
     );
 
     // Fetch student details for email
-    const studentRows = await query<any[]>('SELECT name, email, track_name FROM altruisty_lms_students WHERE id = ?', [studentId]);
+    const studentRows = await query<any[]>('SELECT name, email, track_name, duration FROM altruisty_lms_students WHERE id = ?', [studentId]);
     if (studentRows.length > 0) {
+      const student = studentRows[0];
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yy = String(now.getFullYear()).slice(-2);
+      const yyyy = now.getFullYear();
+      const formattedDate = `${dd}-${mm}-${yy}`;
+
+      const startDateObj = new Date(now);
+      startDateObj.setDate(startDateObj.getDate() - 30);
+      const s_dd = String(startDateObj.getDate()).padStart(2, '0');
+      const s_mm = String(startDateObj.getMonth() + 1).padStart(2, '0');
+      const s_yyyy = startDateObj.getFullYear();
+      const formattedStartDate = `${s_dd}-${s_mm}-${s_yyyy}`;
+      const formattedEndDate = `${dd}-${mm}-${yyyy}`;
+
+      let certPdfBuffer: Buffer | undefined;
+      try {
+        certPdfBuffer = await generateCompletionCertificatePdfBuffer({
+          candidateName: student.name,
+          domain: student.track_name,
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+          duration: student.duration || '30 Days',
+          date: formattedDate,
+          regno: certId.split('-').pop() || '0001',
+          certificateId: certId,
+          verificationUrl: verifyUrl,
+        });
+      } catch (pdfErr) {
+        console.error('Failed to generate completion certificate PDF for email:', pdfErr);
+      }
+
       sendCertificateEmail({
-        to: studentRows[0].email,
-        studentName: studentRows[0].name,
-        trackName: studentRows[0].track_name,
+        to: student.email,
+        studentName: student.name,
+        trackName: student.track_name,
         certificateId: certId,
         verificationUrl: verifyUrl,
+        pdfBuffer: certPdfBuffer,
       }).catch(err => console.error('Error sending certificate email:', err));
     }
 

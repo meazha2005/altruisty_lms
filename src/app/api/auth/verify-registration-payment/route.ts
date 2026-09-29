@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { query } from '@/lib/db';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
-import { sendVerificationEmail, sendReferralBonusEmail } from '@/lib/email';
+import { sendVerificationEmail, sendReferralBonusEmail, sendOfferLetterEmail } from '@/lib/email';
+import { generateOfferLetterPdfBuffer } from '@/lib/pdfGenerator';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -210,14 +211,46 @@ export async function POST(req: NextRequest) {
       }).catch(err => console.error('Error sending referral email:', err));
     }
 
-    // 10. Send Verification Email with OTP
+    // 10. Generate and Send Official Offer Letter via Email
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    const formattedDate = `${dd}-${mm}-${yyyy}`;
+    const studentRegId = `125${yyyy}${String(studentId).padStart(4, '0')}`;
+
+    try {
+      const offerPdfBuffer = await generateOfferLetterPdfBuffer({
+        candidateName: name.trim(),
+        domain: track_name || 'Standard Internship Track',
+        startDate: formattedDate,
+        duration: duration || '30 Days',
+        date: formattedDate,
+        regId: studentRegId,
+      });
+
+      await sendOfferLetterEmail({
+        to: normalizedEmail,
+        candidateName: name.trim(),
+        domain: track_name || 'Standard Internship Track',
+        startDate: formattedDate,
+        duration: duration || '30 Days',
+        regId: studentRegId,
+        pdfBuffer: offerPdfBuffer,
+      });
+      console.log(`[Offer Letter] Successfully generated and emailed to ${normalizedEmail}`);
+    } catch (offerErr: any) {
+      console.error('[Offer Letter] Failed to generate or send offer letter:', offerErr.message);
+    }
+
+    // 11. Send Verification Email with OTP
     await sendVerificationEmail(normalizedEmail, name.trim(), emailOtp);
 
     return NextResponse.json({
       success: true,
       studentId,
       email: normalizedEmail,
-      message: 'Payment verified successfully! A 6-digit verification code has been sent to your email.',
+      message: 'Registration successful! Your official Offer Letter and a 6-digit verification code have been emailed to you.',
     });
   } catch (error: any) {
     console.error('Verify registration payment error:', error);

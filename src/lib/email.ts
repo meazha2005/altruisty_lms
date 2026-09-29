@@ -12,21 +12,33 @@ const transporter = nodemailer.createTransport({
 
 const FROM_EMAIL = process.env.SMTP_FROM || '"Altruisty Innovation" <founder@ztoitech.com>';
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+}
+
 export async function sendEmail({
   to,
   subject,
   html,
+  text,
+  attachments,
 }: {
   to: string;
   subject: string;
   html: string;
+  text?: string;
+  attachments?: EmailAttachment[];
 }) {
   try {
     const info = await transporter.sendMail({
       from: FROM_EMAIL,
       to,
       subject,
+      text,
       html,
+      attachments,
     });
     console.log(`[Email Sent] Message ID: ${info.messageId} to ${to}`);
     return { success: true, messageId: info.messageId };
@@ -254,6 +266,162 @@ export async function sendOfflineScheduleEmail({
   return sendEmail({ to, subject, html });
 }
 
+export async function sendOfferLetterEmail({
+  to,
+  candidateName,
+  domain,
+  startDate,
+  duration,
+  regId,
+  pdfBuffer,
+}: {
+  to: string;
+  candidateName: string;
+  domain: string;
+  startDate: string;
+  duration: string;
+  regId: string;
+  pdfBuffer?: Buffer;
+}) {
+  const subject = `Internship Offer Letter | ${candidateName}`;
+  const preheaderText = `Please find attached your formal Internship Offer Letter from Altruisty Innovation Pvt. Ltd.`;
+  const sanitizedName = candidateName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const attachmentFilename = `Altruisty_Offer_Letter_${sanitizedName}.pdf`;
+
+  const textBody = `Dear ${candidateName},
+
+We are pleased to extend an offer for an internship position at Altruisty Innovation Pvt. Ltd. in the domain of ${domain}.
+
+Your formal offer letter has been generated and is attached to this email. It outlines the scope of work, duration (${duration}), commencement date (${startDate}), and onboarding requirements.
+
+Registration / Credential ID: ${regId}
+
+Next Steps:
+1. Review the enclosed terms and program timeline.
+2. Acknowledge receipt by replying to this email at your earliest convenience.
+3. Keep the attached PDF safe for your records. Our team will reach out with onboarding instructions closer to your start date.
+
+Sincerely,
+People Operations Team
+Altruisty Innovation Pvt. Ltd.
+https://altruistyinnovation.com`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <div style="display: none; font-size: 1px; color: #f9fafb; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+    ${preheaderText}
+  </div>
+
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 32px 20px 32px; border-bottom: 1px solid #f3f4f6;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td>
+                    <span style="font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #111827; text-transform: uppercase;">
+                      ALTRUISTY INNOVATION
+                    </span>
+                  </td>
+                  <td align="right">
+                    <span style="font-size: 12px; font-weight: 500; color: #6b7280; background-color: #f3f4f6; padding: 4px 10px; border-radius: 4px;">
+                      Official Document
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 32px;">
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 24px; color: #1f2937;">Dear <strong>${candidateName}</strong>,</p>
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 24px; color: #374151;">
+                We are thrilled to extend an offer for an internship position at <strong>Altruisty Innovation Pvt. Ltd.</strong> in the domain of <strong>${domain}</strong>.
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 24px; color: #374151;">
+                Your formal offer letter is attached to this email as a PDF. It confirms your registration, program timeline, commencement date (<strong>${startDate}</strong>), and duration (<strong>${duration}</strong>).
+              </p>
+
+              <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;">
+                <span style="font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Student Registration Credential</span>
+                <span style="font-family: monospace; font-size: 18px; font-weight: 800; color: #15803d;">REG:${regId}</span>
+              </div>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 18px 20px; font-size: 13.5px; color: #334155; line-height: 22px;">
+                    <strong style="color: #0f172a; display: block; margin-bottom: 8px; font-size: 13px; letter-spacing: 0.02em; text-transform: uppercase;">Next Steps</strong>
+                    <div style="margin-bottom: 6px;">
+                      <span style="font-weight: 600; color: #0f172a;">1. Review:</span> Review the attached official Offer Letter document for complete details.
+                    </div>
+                    <div style="margin-bottom: 6px;">
+                      <span style="font-weight: 600; color: #0f172a;">2. Acknowledge:</span> Confirm receipt of this letter by replying directly to this thread.
+                    </div>
+                    <div>
+                      <span style="font-weight: 600; color: #0f172a;">3. Onboarding:</span> We will share your Google Meet calendar invites and batch schedule shortly.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Signature Block -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #f3f4f6; padding-top: 24px; margin-top: 8px;">
+                <tr>
+                  <td style="font-size: 14px; line-height: 20px; color: #4b5563;">
+                    <strong style="color: #111827;">People Operations Team</strong><br>
+                    Altruisty Innovation Pvt. Ltd.<br>
+                    <a href="https://altruistyinnovation.com" style="color: #2563eb; text-decoration: none; font-size: 13px;">altruistyinnovation.com</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Security & Legal Footer -->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; margin-top: 20px;">
+          <tr>
+            <td align="center" style="font-size: 12px; color: #9ca3af; line-height: 18px; padding: 0 16px;">
+              This is a confidential communication intended solely for ${to}.<br>
+              © ${new Date().getFullYear()} Altruisty Innovation Pvt. Ltd. All rights reserved.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const attachments: EmailAttachment[] = [];
+  if (pdfBuffer) {
+    attachments.push({
+      filename: attachmentFilename,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
+    });
+  }
+
+  return sendEmail({
+    to,
+    subject,
+    text: textBody,
+    html,
+    attachments,
+  });
+}
+
 // 4. Certificate Issued Email
 export async function sendCertificateEmail({
   to,
@@ -261,14 +429,19 @@ export async function sendCertificateEmail({
   trackName,
   certificateId,
   verificationUrl,
+  pdfBuffer,
 }: {
   to: string;
   studentName: string;
   trackName: string;
   certificateId: string;
   verificationUrl: string;
+  pdfBuffer?: Buffer;
 }) {
   const subject = `Congratulations! Your Altruisty Internship Certificate is Ready (${certificateId})`;
+  const sanitizedName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const attachmentFilename = `Altruisty_Completion_Certificate_${sanitizedName}.pdf`;
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -301,14 +474,14 @@ export async function sendCertificateEmail({
             <div class="cert-id">${certificateId}</div>
           </div>
 
-          <p>Your official verifiable certificate has been issued and is available for viewing, downloading, and sharing with recruiters.</p>
+          <p>Your official verifiable certificate has been issued and is attached as a PDF to this email. It is also available for viewing, downloading, and sharing with recruiters via your student dashboard.</p>
 
           <div class="button-wrap">
-            <a href="${verificationUrl}" target="_blank" class="btn">View & Download Certificate</a>
+            <a href="${verificationUrl}" target="_blank" class="btn">View & Verify Online</a>
           </div>
 
           <p style="font-size:13px; color:#64748b; margin-top:20px; text-align:center;">
-            Verification URL: <br><a href="${verificationUrl}">${verificationUrl}</a>
+            Public Verification URL: <br><a href="${verificationUrl}">${verificationUrl}</a>
           </p>
         </div>
         <div class="footer">
@@ -319,7 +492,17 @@ export async function sendCertificateEmail({
     </body>
     </html>
   `;
-  return sendEmail({ to, subject, html });
+
+  const attachments: EmailAttachment[] = [];
+  if (pdfBuffer) {
+    attachments.push({
+      filename: attachmentFilename,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
+    });
+  }
+
+  return sendEmail({ to, subject, html, attachments });
 }
 
 // 5. Referral Bonus Notification

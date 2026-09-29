@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
+import CompletionCertificatePreview from '@/components/CompletionCertificatePreview';
+import OfferLetterPreview from '@/components/OfferLetterPreview';
 import {
   GraduationCap,
   Calendar,
@@ -32,6 +34,7 @@ import {
   X,
   Download,
   FileDown,
+  FileText,
 } from 'lucide-react';
 
 export default function StudentDashboardPage() {
@@ -40,7 +43,7 @@ export default function StudentDashboardPage() {
   const [downloading, setDownloading] = useState<'pdf' | 'png' | null>(null);
   const [data, setData] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'classes' | 'profile' | 'certificate'>('classes');
+  const [activeTab, setActiveTab] = useState<'classes' | 'profile' | 'offer' | 'certificate'>('classes');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Copy referral status
@@ -54,9 +57,31 @@ export default function StudentDashboardPage() {
   // Certificate QR Code
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
-  const handleDownloadPDF = async () => {
-    const certElement = document.getElementById('certificate-print-area');
-    if (!certElement) return;
+  // Responsive Scalers for A4 Documents
+  const certContainerRef = useRef<HTMLDivElement>(null);
+  const [certScale, setCertScale] = useState(1);
+  const offerContainerRef = useRef<HTMLDivElement>(null);
+  const [offerScale, setOfferScale] = useState(1);
+
+  useEffect(() => {
+    const updateScales = () => {
+      if (certContainerRef.current) {
+        const avail = certContainerRef.current.clientWidth - 16;
+        setCertScale(Math.min(avail / 794, 1));
+      }
+      if (offerContainerRef.current) {
+        const avail = offerContainerRef.current.clientWidth - 16;
+        setOfferScale(Math.min(avail / 794, 1));
+      }
+    };
+    updateScales();
+    window.addEventListener('resize', updateScales);
+    return () => window.removeEventListener('resize', updateScales);
+  }, [activeTab, data]);
+
+  const handleDownloadCertPDF = async () => {
+    const certElement = document.getElementById('completion-certificate-preview');
+    if (!certElement || !data?.certificate) return;
 
     try {
       setDownloading('pdf');
@@ -65,45 +90,20 @@ export default function StudentDashboardPage() {
 
       const dataUrl = await toPng(certElement, {
         quality: 1,
-        pixelRatio: 3,
-        cacheBust: true,
+        pixelRatio: 2.5,
         backgroundColor: '#ffffff',
       });
 
       const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
+        orientation: 'portrait',
+        unit: 'px',
+        format: [794, 1123],
+        compress: true,
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const img = new (window as any).Image();
-      img.src = dataUrl;
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-      });
-
-      const margin = 8;
-      const availWidth = pdfWidth - margin * 2;
-      const availHeight = pdfHeight - margin * 2;
-      const imgRatio = img.width / img.height;
-
-      let renderWidth = availWidth;
-      let renderHeight = availWidth / imgRatio;
-
-      if (renderHeight > availHeight) {
-        renderHeight = availHeight;
-        renderWidth = availHeight * imgRatio;
-      }
-
-      const xPos = (pdfWidth - renderWidth) / 2;
-      const yPos = (pdfHeight - renderHeight) / 2;
-
-      pdf.addImage(dataUrl, 'PNG', xPos, yPos, renderWidth, renderHeight);
-      pdf.save(`Altruisty-Certificate-${data?.certificate?.certificate_id || 'credential'}.pdf`);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
+      const sanitizedName = (data?.student?.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+      pdf.save(`Altruisty_Certificate_${sanitizedName}_${data.certificate.certificate_id}.pdf`);
     } catch (err: any) {
       console.error('Failed to download certificate as PDF', err);
       window.print();
@@ -112,9 +112,9 @@ export default function StudentDashboardPage() {
     }
   };
 
-  const handleDownloadPNG = async () => {
-    const certElement = document.getElementById('certificate-print-area');
-    if (!certElement) return;
+  const handleDownloadCertPNG = async () => {
+    const certElement = document.getElementById('completion-certificate-preview');
+    if (!certElement || !data?.certificate) return;
 
     try {
       setDownloading('png');
@@ -123,18 +123,80 @@ export default function StudentDashboardPage() {
       const dataUrl = await toPng(certElement, {
         quality: 1,
         pixelRatio: 3,
-        cacheBust: true,
         backgroundColor: '#ffffff',
       });
 
+      const sanitizedName = (data?.student?.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
       const link = document.createElement('a');
-      link.download = `Altruisty-Certificate-${data?.certificate?.certificate_id || 'credential'}.png`;
+      link.download = `Altruisty_Certificate_${sanitizedName}_${data.certificate.certificate_id}.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (err: any) {
       console.error('Failed to download certificate as PNG', err);
+      window.print();
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDownloadOfferPDF = async () => {
+    const offerElement = document.getElementById('offer-letter-preview');
+    if (!offerElement || !data?.student) return;
+
+    try {
+      setDownloading('pdf');
+      const { toPng } = await import('html-to-image');
+      const { jsPDF } = await import('jspdf');
+
+      const dataUrl = await toPng(offerElement, {
+        quality: 1,
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff',
+      });
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [794, 1123],
+        compress: true,
+      });
+
+      pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123, undefined, 'FAST');
+      const sanitizedName = (data.student.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+      pdf.save(`Altruisty_Offer_Letter_${sanitizedName}.pdf`);
+    } catch (err: any) {
+      console.error('Failed to download offer letter as PDF', err);
+      window.print();
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDownloadOfferPNG = async () => {
+    const offerElement = document.getElementById('offer-letter-preview');
+    if (!offerElement || !data?.student) return;
+
+    try {
+      setDownloading('png');
+      const { toPng } = await import('html-to-image');
+
+      const dataUrl = await toPng(offerElement, {
+        quality: 1,
+        pixelRatio: 3,
+        backgroundColor: '#ffffff',
+      });
+
+      const sanitizedName = (data.student.name || 'Candidate').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const link = document.createElement('a');
+      link.download = `Altruisty_Offer_Letter_${sanitizedName}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      console.error('Failed to download offer letter as PNG', err);
       window.print();
     } finally {
       setDownloading(null);
@@ -426,6 +488,26 @@ export default function StudentDashboardPage() {
 
                 <button
                   onClick={() => {
+                    setActiveTab('offer');
+                    setMobileDrawerOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === 'offer'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5" />
+                    <span>Offer Letter</span>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    Official
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
                     setActiveTab('certificate');
                     setMobileDrawerOpen(false);
                   }}
@@ -531,6 +613,21 @@ export default function StudentDashboardPage() {
             <span>Profile & Referral Rewards</span>
             <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-amber-400 text-amber-950 font-black">
               {referrals.count} Referred
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('offer')}
+            className={`px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+              activeTab === 'offer'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Offer Letter</span>
+            <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800">
+              Official
             </span>
           </button>
 
@@ -840,7 +937,106 @@ export default function StudentDashboardPage() {
           </div>
         )}
 
-        {/* TAB 3: CERTIFICATE */}
+        {/* TAB 3: OFFER LETTER */}
+        {activeTab === 'offer' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                  Official Internship Offer Letter
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Registration ID: <strong>{`125${new Date(student.created_at || Date.now()).getFullYear()}${String(student.id).padStart(4, '0')}`}</strong> • Domain: <strong>{student.track_name}</strong>
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleDownloadOfferPDF}
+                  disabled={downloading !== null}
+                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all shrink-0 cursor-pointer disabled:opacity-75"
+                >
+                  {downloading === 'pdf' ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Generating PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span>Download Offer Letter (PDF)</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleDownloadOfferPNG}
+                  disabled={downloading !== null}
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer disabled:opacity-75"
+                  title="Download image format"
+                >
+                  {downloading === 'png' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <FileDown className="w-4 h-4 text-slate-500" />
+                  )}
+                  <span>Image (PNG)</span>
+                </button>
+
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                  title="Print Document"
+                >
+                  <Printer className="w-4 h-4 text-slate-500" />
+                  <span className="hidden sm:inline">Print</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Offer Letter Container with Proportional Scale */}
+            <div
+              ref={offerContainerRef}
+              className="w-full flex justify-center items-start overflow-hidden py-2"
+              style={{ height: `${1123 * offerScale}px` }}
+            >
+              <div
+                style={{
+                  transform: `scale(${offerScale})`,
+                  transformOrigin: 'top center',
+                  width: '794px',
+                  height: '1123px',
+                  flexShrink: 0,
+                }}
+              >
+                {(() => {
+                  const regDateObj = student?.created_at ? new Date(student.created_at) : new Date();
+                  const r_dd = String(regDateObj.getDate()).padStart(2, '0');
+                  const r_mm = String(regDateObj.getMonth() + 1).padStart(2, '0');
+                  const r_yyyy = regDateObj.getFullYear();
+                  const formattedOfferDate = `${r_dd}-${r_mm}-${r_yyyy}`;
+                  const studentRegId = `125${r_yyyy}${String(student.id).padStart(4, '0')}`;
+
+                  return (
+                    <OfferLetterPreview
+                      fields={{
+                        candidateName: student.name,
+                        domain: student.track_name,
+                        startDate: formattedOfferDate,
+                        duration: student.duration || '30 Days',
+                        date: formattedOfferDate,
+                        regId: studentRegId,
+                      }}
+                    />
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: CERTIFICATE */}
         {activeTab === 'certificate' && (
           <div className="space-y-6">
             {!student.balance_paid ? (
@@ -918,7 +1114,7 @@ export default function StudentDashboardPage() {
 
                   <div className="flex flex-wrap items-center gap-2">
                     <button
-                      onClick={handleDownloadPDF}
+                      onClick={handleDownloadCertPDF}
                       disabled={downloading !== null}
                       className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all shrink-0 cursor-pointer disabled:opacity-75"
                     >
@@ -936,7 +1132,7 @@ export default function StudentDashboardPage() {
                     </button>
 
                     <button
-                      onClick={handleDownloadPNG}
+                      onClick={handleDownloadCertPNG}
                       disabled={downloading !== null}
                       className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer disabled:opacity-75"
                       title="Download image format"
@@ -969,95 +1165,57 @@ export default function StudentDashboardPage() {
                   </div>
                 </div>
 
-                {/* Printable Certificate Canvas / Card */}
+                {/* Certificate Container with Proportional Scale */}
                 <div
-                  id="certificate-print-area"
-                  className="bg-white rounded-3xl p-6 sm:p-12 border-8 border-slate-100 shadow-2xl relative overflow-hidden max-w-4xl mx-auto"
-                  style={{
-                    backgroundImage: 'radial-gradient(#1b449c08 1px, transparent 1px)',
-                    backgroundSize: '20px 20px',
-                  }}
+                  ref={certContainerRef}
+                  className="w-full flex justify-center items-start overflow-hidden py-2"
+                  style={{ height: `${1123 * certScale}px` }}
                 >
-                  {/* Decorative Border Corners */}
-                  <div className="absolute top-4 left-4 w-12 h-12 border-t-4 border-l-4 border-blue-800 pointer-events-none" />
-                  <div className="absolute top-4 right-4 w-12 h-12 border-t-4 border-r-4 border-blue-800 pointer-events-none" />
-                  <div className="absolute bottom-4 left-4 w-12 h-12 border-b-4 border-l-4 border-blue-800 pointer-events-none" />
-                  <div className="absolute bottom-4 right-4 w-12 h-12 border-b-4 border-r-4 border-blue-800 pointer-events-none" />
+                  <div
+                    style={{
+                      transform: `scale(${certScale})`,
+                      transformOrigin: 'top center',
+                      width: '794px',
+                      height: '1123px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {(() => {
+                      const certDateObj = certificate ? new Date(certificate.issue_date) : new Date();
+                      const c_dd = String(certDateObj.getDate()).padStart(2, '0');
+                      const c_mm = String(certDateObj.getMonth() + 1).padStart(2, '0');
+                      const c_yy = String(certDateObj.getFullYear()).slice(-2);
+                      const c_yyyy = certDateObj.getFullYear();
+                      const formattedCertDate = `${c_dd}-${c_mm}-${c_yy}`;
 
-                  {/* Header */}
-                  <div className="text-center space-y-4">
-                    <div className="flex justify-center">
-                      <img
-                        src="/logo.png"
-                        alt="Altruisty Innovation"
-                        className="h-14 sm:h-16 w-auto object-contain"
-                      />
-                    </div>
+                      const certStartDateObj = new Date(certDateObj);
+                      certStartDateObj.setDate(certStartDateObj.getDate() - 30);
+                      const cs_dd = String(certStartDateObj.getDate()).padStart(2, '0');
+                      const cs_mm = String(certStartDateObj.getMonth() + 1).padStart(2, '0');
+                      const cs_yyyy = certStartDateObj.getFullYear();
+                      const formattedCertStartDate = `${cs_dd}-${cs_mm}-${cs_yyyy}`;
+                      const formattedCertEndDate = `${c_dd}-${c_mm}-${c_yyyy}`;
 
-                    <div className="pt-2">
-                      <span className="text-xs font-black tracking-widest uppercase text-blue-800 border-b-2 border-blue-600 pb-1">
-                        ALTRUISTY INNOVATION PVT LTD
-                      </span>
-                    </div>
+                      const certRegNo = certificate?.certificate_id ? certificate.certificate_id.split('-').pop() || '0001' : '0001';
+                      const verifyUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/verify-certificate/${certificate.certificate_id}`;
 
-                    <h1 className="text-2xl sm:text-4xl font-serif font-black text-slate-900 tracking-tight pt-1">
-                      CERTIFICATE OF INTERNSHIP
-                    </h1>
-                    <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-slate-400">
-                      THIS CREDENTIAL IS PROUDLY PRESENTED TO
-                    </p>
-                  </div>
-
-                  {/* Student Name */}
-                  <div className="text-center my-6">
-                    <div className="text-2xl sm:text-4xl font-serif font-bold text-blue-900 italic border-b-2 border-slate-300 pb-2 inline-block px-6 sm:px-8 min-w-[260px] sm:min-w-[320px]">
-                      {student.name}
-                    </div>
-                  </div>
-
-                  {/* Body Text */}
-                  <div className="text-center max-w-2xl mx-auto space-y-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
-                    <p>
-                      For successfully completing the{' '}
-                      <strong className="text-slate-900 font-bold capitalize">{student.category} Internship</strong>{' '}
-                      program in{' '}
-                      <strong className="text-blue-800 font-bold">{student.track_name}</strong> ({student.duration})
-                      demonstrating high competence, commitment, and practical software engineering excellence.
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Graded with Distinction: <strong className="text-emerald-700 font-bold">{certificate.grade}</strong> • Mode: <strong className="capitalize">{student.mode}</strong>
-                    </p>
-                  </div>
-
-                  {/* Certificate Footer with Signatures & QR Code */}
-                  <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-between gap-4">
-                    {/* Left: QR Verification */}
-                    <div className="flex items-center gap-2.5 sm:gap-3">
-                      {qrCodeDataUrl && (
-                        <div className="p-1 sm:p-1.5 bg-white border border-slate-200 rounded-lg shadow-xs shrink-0">
-                          <img
-                            src={qrCodeDataUrl}
-                            alt="QR Code"
-                            className="w-14 h-14 sm:w-18 sm:h-18 object-contain"
-                          />
-                        </div>
-                      )}
-                      <div className="text-left text-[10px] sm:text-[11px] text-slate-500">
-                        <span className="font-bold text-slate-800 block text-xs">Scan to Verify</span>
-                        <span className="font-mono">ID: {certificate.certificate_id}</span><br />
-                        <span className="text-emerald-600 font-semibold">✓ Verified Credential</span>
-                      </div>
-                    </div>
-
-                    {/* Right: Authorized Signature */}
-                    <div className="text-right">
-                      <div className="font-serif italic text-base sm:text-lg font-bold text-blue-950">
-                        Managing Director
-                      </div>
-                      <div className="w-28 sm:w-36 h-0.5 bg-slate-300 my-1 ml-auto" />
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-800">Altruisty Innovation Pvt Ltd</p>
-                      <p className="text-[9px] sm:text-[10px] text-slate-500">Authorized Signatory</p>
-                    </div>
+                      return (
+                        <CompletionCertificatePreview
+                          fields={{
+                            candidateName: student.name,
+                            domain: student.track_name,
+                            startDate: formattedCertStartDate,
+                            endDate: formattedCertEndDate,
+                            duration: student.duration || '30 Days',
+                            date: formattedCertDate,
+                            regno: certRegNo,
+                            certificateId: certificate.certificate_id,
+                            qrCodeDataUrl: qrCodeDataUrl || undefined,
+                            verificationUrl: verifyUrl,
+                          }}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
