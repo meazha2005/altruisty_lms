@@ -692,8 +692,8 @@ export default function HomePage() {
                   {/* Interactive Coupon Box */}
                   <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center shrink-0 w-full sm:w-auto">
                     <span className="text-xs font-semibold text-sky-200">Active Coupon Code</span>
-                    <div className="text-2xl font-black text-amber-300 tracking-wider my-0.5">ALTRUISTY200</div>
-                    <span className="text-[11px] text-sky-100 block">Get ₹200 OFF instantly</span>
+                    <div className="text-2xl sm:text-3xl font-black text-amber-300 tracking-wider my-0.5 select-all">ALTRUISTY999</div>
+                    <span className="text-[11px] text-emerald-300 font-bold block">Get ₹999 OFF instantly on Project Internships</span>
                   </div>
                 </div>
 
@@ -736,7 +736,7 @@ export default function HomePage() {
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span>Discount coupons valid</span>
+                          <span className="font-semibold text-blue-700">Coupon ALTRUISTY999 (₹999 OFF)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -746,7 +746,7 @@ export default function HomePage() {
                     </div>
 
                     <Link
-                      href="/register?cat=project&mode=online&dur=30days"
+                      href="/register?cat=project&mode=online&dur=30days&coupon=ALTRUISTY999"
                       className="w-full py-3 text-center text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm shadow-blue-500/20"
                     >
                       Enroll Online (Pay ₹1,000)
@@ -789,7 +789,7 @@ export default function HomePage() {
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span>Discount coupons valid</span>
+                          <span className="font-semibold text-blue-700">Coupon ALTRUISTY999 (₹999 OFF)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -803,7 +803,7 @@ export default function HomePage() {
                     </div>
 
                     <Link
-                      href="/register?cat=project&mode=online&dur=2month"
+                      href="/register?cat=project&mode=online&dur=2month&coupon=ALTRUISTY999"
                       className="w-full py-3 text-center text-sm font-bold text-white bg-gradient-to-r from-blue-700 to-sky-600 hover:from-blue-800 hover:to-sky-700 rounded-xl transition-all shadow-md shadow-blue-500/25"
                     >
                       Enroll Online (Pay ₹1,400)
@@ -843,7 +843,7 @@ export default function HomePage() {
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span>Discount coupons valid</span>
+                          <span className="font-semibold text-amber-800">Coupon ALTRUISTY999 (₹999 OFF)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -857,7 +857,7 @@ export default function HomePage() {
                     </div>
 
                     <Link
-                      href="/register?cat=project&mode=offline&dur=30days"
+                      href="/register?cat=project&mode=offline&dur=30days&coupon=ALTRUISTY999"
                       className="w-full py-3 text-center text-sm font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                     >
                       Enroll Offline (Pay ₹1,000)
@@ -897,7 +897,7 @@ export default function HomePage() {
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span>Discount coupons valid</span>
+                          <span className="font-semibold text-amber-800">Coupon ALTRUISTY999 (₹999 OFF)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -911,7 +911,7 @@ export default function HomePage() {
                     </div>
 
                     <Link
-                      href="/register?cat=project&mode=offline&dur=2month"
+                      href="/register?cat=project&mode=offline&dur=2month&coupon=ALTRUISTY999"
                       className="w-full py-3 text-center text-sm font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                     >
                       Enroll Offline (Pay ₹1,400)

@@ -38,17 +38,17 @@ async function runTests() {
     const couponRes = await fetch(`${BASE_URL}/api/validate-coupon`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: 'ALTRUISTY200', category: 'project', price: 1999 }),
+      body: JSON.stringify({ code: 'ALTRUISTY999', category: 'project', price: 1999 }),
     });
     const couponData = await couponRes.json();
-    assert(couponData.valid === true, 'Coupon ALTRUISTY200 is valid for Project Internship');
-    assert(couponData.discountAmount === 200, 'Coupon discount amount is ₹200');
+    assert(couponData.valid === true, 'Coupon ALTRUISTY999 is valid for Project Internship');
+    assert(couponData.discountAmount === 999, 'Coupon discount amount is ₹999');
 
     // Test coupon on training (must be rejected)
     const trainingCouponRes = await fetch(`${BASE_URL}/api/validate-coupon`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: 'ALTRUISTY200', category: 'training', price: 799 }),
+      body: JSON.stringify({ code: 'ALTRUISTY999', category: 'training', price: 799 }),
     });
     const trainingCouponData = await trainingCouponRes.json();
     assert(trainingCouponData.valid === false, 'Coupon rejected for Training Internship as required');
@@ -68,13 +68,13 @@ async function runTests() {
         duration: '30days',
         password: 'password123',
         confirmPassword: 'password123',
-        coupon_code: 'ALTRUISTY200',
+        coupon_code: 'ALTRUISTY999',
       }),
     });
     const regIntentData = await regIntentRes.json();
     assert(regIntentRes.status === 200, 'POST /api/auth/register-intent returns 200');
-    assert(regIntentData.totalFee === 1799, 'Total fee with coupon is ₹1799 (1999 - 200)');
-    assert(regIntentData.amount === 900, 'Initial half payment is ₹900 (Math.ceil(1799 / 2))');
+    assert(regIntentData.totalFee === 1000, 'Total fee with coupon is ₹1000 (1999 - 999)');
+    assert(regIntentData.amount === 500, 'Initial half payment is ₹500 (Math.ceil(1000 / 2))');
     assert(regIntentData.orderId && regIntentData.orderId.startsWith('order_'), `Razorpay order generated: ${regIntentData.orderId}`);
 
     // 4. Test Admin Login

@@ -302,7 +302,7 @@ async function initDatabase() {
 
     // 5. Coupons Seed
     const coupons = [
-      { code: 'ALTRUISTY200', discount_type: 'fixed', discount_value: 200.00, applicable_category: 'project', min_amount: 1500.00 },
+      { code: 'ALTRUISTY999', discount_type: 'fixed', discount_value: 999.00, applicable_category: 'project', min_amount: 1500.00 },
       { code: 'PROJECT10', discount_type: 'percentage', discount_value: 10.00, applicable_category: 'project', min_amount: 1500.00 },
     ];
 

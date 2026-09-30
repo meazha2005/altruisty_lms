@@ -46,7 +46,7 @@ function RegisterContent() {
     duration: searchParams.get('dur') || '',
     password: '',
     confirmPassword: '',
-    coupon_code: '',
+    coupon_code: searchParams.get('coupon') || '',
     referral_code: searchParams.get('ref') || '',
   });
 
@@ -104,8 +104,9 @@ function RegisterContent() {
   const amountToPayNow = Math.ceil(totalFee / 2);
   const balanceFee = totalFee - amountToPayNow;
 
-  const handleApplyCoupon = async () => {
-    if (!formData.coupon_code.trim()) return;
+  const handleApplyCoupon = async (codeOverride?: string) => {
+    const codeToApply = (codeOverride || formData.coupon_code).trim();
+    if (!codeToApply || formData.category !== 'project') return;
     setValidatingCoupon(true);
     setCouponValidation(null);
     setErrorMsg(null);
@@ -115,7 +116,7 @@ function RegisterContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          code: formData.coupon_code.trim(),
+          code: codeToApply,
           category: formData.category,
           price: basePrice,
         }),
@@ -126,6 +127,9 @@ function RegisterContent() {
           valid: true,
           discountAmount: data.discountAmount,
         });
+        if (codeOverride) {
+          setFormData((prev) => ({ ...prev, coupon_code: codeOverride }));
+        }
       } else {
         setCouponValidation({
           valid: false,
@@ -139,6 +143,13 @@ function RegisterContent() {
       setValidatingCoupon(false);
     }
   };
+
+  // Auto-apply coupon when category is project and price is loaded
+  useEffect(() => {
+    if (formData.category === 'project' && formData.coupon_code.trim() && basePrice > 0 && !couponValidation) {
+      handleApplyCoupon();
+    }
+  }, [formData.category, formData.coupon_code, basePrice]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -589,24 +600,35 @@ function RegisterContent() {
 
                 {/* Coupon Code (Only for Project Internship) */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Discount Coupon Code (Optional)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Discount Coupon Code (Optional)
+                    </label>
+                    {formData.category === 'project' && !couponValidation?.valid && (
+                      <button
+                        type="button"
+                        onClick={() => handleApplyCoupon('ALTRUISTY999')}
+                        className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                      >
+                        Apply ALTRUISTY999 (-₹999)
+                      </button>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       name="coupon_code"
                       value={formData.coupon_code}
                       onChange={handleInputChange}
-                      placeholder="Enter coupon code"
+                      placeholder="e.g. ALTRUISTY999"
                       disabled={formData.category !== 'project'}
                       className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm uppercase disabled:bg-slate-100 disabled:text-slate-400"
                     />
                     <button
                       type="button"
-                      onClick={handleApplyCoupon}
+                      onClick={() => handleApplyCoupon()}
                       disabled={formData.category !== 'project' || validatingCoupon || !formData.coupon_code.trim()}
-                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold text-xs rounded-xl transition-colors whitespace-nowrap"
+                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold text-xs rounded-xl transition-colors whitespace-nowrap cursor-pointer"
                     >
                       {validatingCoupon ? 'Checking...' : 'Apply'}
                     </button>
@@ -625,8 +647,8 @@ function RegisterContent() {
                       ✗ {couponValidation.error}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      Available for Project Internships
+                    <span className="text-[11px] text-slate-500 mt-1 block">
+                      Active Code: <strong className="text-blue-600 font-bold">ALTRUISTY999</strong> (Save ₹999 instantly on Project Tracks)
                     </span>
                   )}
                 </div>
