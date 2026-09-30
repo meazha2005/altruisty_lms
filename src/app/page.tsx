@@ -506,12 +506,12 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div className="space-y-1">
-                <div className="text-3xl sm:text-4xl font-black text-blue-900">500+</div>
+                <div className="text-3xl sm:text-4xl font-black text-blue-900">2500+</div>
                 <div className="text-xs sm:text-sm font-semibold text-slate-600">Students Trained & Placed</div>
               </div>
               <div className="space-y-1">
-                <div className="text-3xl sm:text-4xl font-black text-blue-900">50%</div>
-                <div className="text-xs sm:text-sm font-semibold text-slate-600">Pay-Later Safety Model</div>
+                <div className="text-3xl sm:text-4xl font-black text-blue-900">50+</div>
+                <div className="text-xs sm:text-sm font-semibold text-slate-600">Partnered Colleges</div>
               </div>
               <div className="space-y-1">
                 <div className="text-3xl sm:text-4xl font-black text-blue-900">1 Guaranteed</div>
@@ -657,7 +657,7 @@ export default function HomePage() {
                       : 'text-slate-700 hover:text-slate-900'
                   }`}
                 >
-                  🚀 Project Internship (Includes Industry Visit & Coupons)
+                  Project Internship (Includes Industry Visit & Coupons)
                 </button>
                 <button
                   onClick={() => setPricingCategory('training')}
@@ -667,7 +667,7 @@ export default function HomePage() {
                       : 'text-slate-700 hover:text-slate-900'
                   }`}
                 >
-                  📚 Training Internship (Skill Foundation)
+                  Training Internship (Skill Foundation)
                 </button>
               </div>
             </div>
@@ -1354,7 +1354,7 @@ export default function HomePage() {
                 Student Testimonials
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                Trusted by 500+ Aspiring Engineers
+                Trusted by 2500+ Aspiring Engineers
               </h2>
               <p className="text-base text-slate-600">
                 Read authentic feedback from students who transformed their portfolios and received verified credentials.
